@@ -55,9 +55,9 @@ def scrape_annonces():
     
     for site, url in URLS.items():
         if site == "Le Bon Coin":
-            # Configuration de Selenium pour Chrome
+            # Configuration Selenium
             chrome_options = Options()
-            chrome_options.add_argument("--headless")  # Mode sans interface graphique
+            chrome_options.add_argument("--headless")
             chrome_options.add_argument("--no-sandbox")
             chrome_options.add_argument("--disable-dev-shm-usage")
 
@@ -68,12 +68,14 @@ def scrape_annonces():
             annonces = driver.find_elements(By.CSS_SELECTOR, "p._2tubl")
             prix_annonces = driver.find_elements(By.CSS_SELECTOR, "span._1C-CB")
 
+            logging.info(f"DEBUG: Le Bon Coin - {len(annonces)} annonces trouvées, {len(prix_annonces)} prix trouvés.")
+
             for titre, prix in zip(annonces, prix_annonces):
-                lien = url  # Le Bon Coin charge des popups, donc pas d'URL directe facile
+                lien = url  # Pas d'URL directe facile
+                logging.info(f"DEBUG: Le Bon Coin - Titre: {titre.text} - Prix: {prix.text}")
                 nouvelles_annonces.append(("Le Bon Coin", titre.text, prix.text, lien))
-            
+
             driver.quit()
-            logging.info(f"{len(nouvelles_annonces)} annonces trouvées sur Le Bon Coin")
         
         else:
             response = requests.get(url)
@@ -89,6 +91,7 @@ def scrape_annonces():
                         titre = annonce.find("h2").text.strip()
                         prix = annonce.find("span", class_="price").text.strip()
                         lien = annonce.find("a")["href"]
+                        logging.info(f"DEBUG: Upway - Titre: {titre} - Prix: {prix}")
                         nouvelles_annonces.append((site, titre, prix, f"https://upway.fr{lien}"))
 
                 elif site == "Rebike":
@@ -98,13 +101,15 @@ def scrape_annonces():
                         titre = annonce.find("h2").text.strip()
                         prix = annonce.find("span", class_="rebike-product-card-price").text.strip()
                         lien = annonce.find("a")["href"]
+                        logging.info(f"DEBUG: Rebike - Titre: {titre} - Prix: {prix}")
                         nouvelles_annonces.append((site, titre, prix, f"https://rebike.com{lien}"))
-                
+
                 logging.info(f"{annonces_count} annonces trouvées sur {site}")
             else:
                 logging.error(f"Échec : Impossible de scraper {site}, Code HTTP {response.status_code}")
 
     return nouvelles_annonces
+
 
 # Fonction de stockage et de comparaison
 def check_and_save_annonces(nouvelles_annonces):

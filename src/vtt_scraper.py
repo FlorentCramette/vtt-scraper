@@ -114,17 +114,23 @@ def scrape_annonces():
 # Fonction de stockage et de comparaison
 def check_and_save_annonces(nouvelles_annonces):
     try:
-        df_old = pd.read_csv(CSV_FILE)
-    except FileNotFoundError:
-        logging.warning("Fichier CSV non trouvé, création d'un nouveau fichier.")
+        if os.path.exists(CSV_FILE) and os.stat(CSV_FILE).st_size > 0:
+            df_old = pd.read_csv(CSV_FILE)
+        else:
+            raise FileNotFoundError  # Simule un fichier manquant si vide
+    except (FileNotFoundError, pd.errors.EmptyDataError):
+        logging.warning("Fichier CSV introuvable ou vide, création d'un nouveau fichier.")
         df_old = pd.DataFrame(columns=["Site", "Titre", "Prix", "Lien"])
-    
+
     df_new = pd.DataFrame(nouvelles_annonces, columns=["Site", "Titre", "Prix", "Lien"])
-    df_merged = pd.concat([df_old, df_new]).drop_duplicates(subset=["Lien"], keep=False)
-    df_new.to_csv(CSV_FILE, index=False)
-    logging.info(f"{len(df_merged)} nouvelles annonces détectées.")
-    
-    return df_merged
+
+    if not df_new.empty:
+        df_new.to_csv(CSV_FILE, index=False)
+        logging.info(f"{len(df_new)} nouvelles annonces enregistrées.")
+    else:
+        logging.info("Aucune nouvelle annonce à enregistrer.")
+
+    return df_new
 
 # Fonction d'envoi d'email
 def send_email(new_entries):

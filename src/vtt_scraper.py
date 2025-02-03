@@ -17,6 +17,13 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 
+# Vérifier et créer le dossier logs s'il n'existe pas
+LOG_DIR = "logs"
+LOG_FILE = os.path.join(LOG_DIR, "scraper.log")
+
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
 # Configuration du logging
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 

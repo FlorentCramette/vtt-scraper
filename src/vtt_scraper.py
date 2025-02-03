@@ -37,8 +37,10 @@ logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s -
 # URLs des sites à scraper
 URLS = {
     "Upway": "https://upway.fr/search?q=Cube+Stereo+Hybrid+160+HPC",
-    "Rebike": "https://rebike.com/fr/search?q=Cube+Stereo+Hybrid+160+HPC"
+    "Rebike": "https://rebike.com/fr/search?q=Cube+Stereo+Hybrid+160+HPC",
+    "Le Bon Coin": "https://www.leboncoin.fr/recherche?category=57&text=Cube+Stereo+Hybrid+160+HPC"
 }
+
 
 # Fonction de scraping
 def scrape_annonces():

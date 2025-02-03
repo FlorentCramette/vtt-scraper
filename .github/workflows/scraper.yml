@@ -2,8 +2,8 @@ name: VTT Scraper
 
 on:
   schedule:
-    - cron: "0 8,20 * * *"
-  workflow_dispatch:
+    - cron: "0 8,20 * * *"  # Exécution à 08:00 et 20:00 UTC chaque jour
+  workflow_dispatch:  # Permet d'exécuter l'action manuellement
 
 jobs:
   scrape:
@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install requests beautifulsoup4 pandas 
 
       - name: Run scraper
         env:

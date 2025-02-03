@@ -1,4 +1,4 @@
-# VTT Scraper
+# VTT Scraper (en cours)
 
 ## Description
 VTT Scraper est un script automatisé permettant de surveiller les annonces de VTT sur plusieurs sites web :

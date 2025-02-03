@@ -6,6 +6,12 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
 import logging
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+import time
 
 # Configuration
 SEARCH_QUERY = "Cube Stereo Hybrid 160 HPC"
@@ -46,30 +52,58 @@ URLS = {
 def scrape_annonces():
     logging.info("Démarrage du scraping")
     nouvelles_annonces = []
-    for site, url in URLS.items():
-        response = requests.get(url)
-        if response.status_code == 200:
-            logging.info(f"Succès : Scraping de {site}")
-            soup = BeautifulSoup(response.text, "html.parser")
-            
-            if site == "Upway":
-                annonces = soup.find_all("div", class_="product-tile")
-                for annonce in annonces:
-                    titre = annonce.find("h2").text.strip()
-                    prix = annonce.find("span", class_="price").text.strip()
-                    lien = annonce.find("a")["href"]
-                    nouvelles_annonces.append((site, titre, prix, f"https://upway.fr{lien}"))
-            
-            elif site == "Rebike":
-                annonces = soup.find_all("div", class_="rebike-product-card")
-                for annonce in annonces:
-                    titre = annonce.find("h2").text.strip()
-                    prix = annonce.find("span", class_="rebike-product-card-price").text.strip()
-                    lien = annonce.find("a")["href"]
-                    nouvelles_annonces.append((site, titre, prix, f"https://rebike.com{lien}"))
-        else:
-            logging.error(f"Échec : Impossible de scraper {site}, Code HTTP {response.status_code}")
     
+    for site, url in URLS.items():
+        if site == "Le Bon Coin":
+            # Configuration de Selenium pour Chrome
+            chrome_options = Options()
+            chrome_options.add_argument("--headless")  # Mode sans interface graphique
+            chrome_options.add_argument("--no-sandbox")
+            chrome_options.add_argument("--disable-dev-shm-usage")
+
+            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+            driver.get(url)
+            time.sleep(5)  # Attendre que la page charge
+
+            annonces = driver.find_elements(By.CSS_SELECTOR, "p._2tubl")
+            prix_annonces = driver.find_elements(By.CSS_SELECTOR, "span._1C-CB")
+
+            for titre, prix in zip(annonces, prix_annonces):
+                lien = url  # Le Bon Coin charge des popups, donc pas d'URL directe facile
+                nouvelles_annonces.append(("Le Bon Coin", titre.text, prix.text, lien))
+            
+            driver.quit()
+            logging.info(f"{len(nouvelles_annonces)} annonces trouvées sur Le Bon Coin")
+        
+        else:
+            response = requests.get(url)
+            if response.status_code == 200:
+                logging.info(f"Succès : Scraping de {site}")
+                soup = BeautifulSoup(response.text, "html.parser")
+                annonces_count = 0
+
+                if site == "Upway":
+                    annonces = soup.find_all("div", class_="product-tile")
+                    annonces_count = len(annonces)
+                    for annonce in annonces:
+                        titre = annonce.find("h2").text.strip()
+                        prix = annonce.find("span", class_="price").text.strip()
+                        lien = annonce.find("a")["href"]
+                        nouvelles_annonces.append((site, titre, prix, f"https://upway.fr{lien}"))
+
+                elif site == "Rebike":
+                    annonces = soup.find_all("div", class_="rebike-product-card")
+                    annonces_count = len(annonces)
+                    for annonce in annonces:
+                        titre = annonce.find("h2").text.strip()
+                        prix = annonce.find("span", class_="rebike-product-card-price").text.strip()
+                        lien = annonce.find("a")["href"]
+                        nouvelles_annonces.append((site, titre, prix, f"https://rebike.com{lien}"))
+                
+                logging.info(f"{annonces_count} annonces trouvées sur {site}")
+            else:
+                logging.error(f"Échec : Impossible de scraper {site}, Code HTTP {response.status_code}")
+
     return nouvelles_annonces
 
 # Fonction de stockage et de comparaison

@@ -14,7 +14,7 @@ from selenium.webdriver.chrome.options import Options
 import time
 
 # Configuration
-SEARCH_QUERY = "Stereo Hybrid 160 HPC"
+SEARCH_QUERY = "Stereo Hybrid 140 HPC"
 CSV_FILE = "data/vtt_annonces.csv"
 LOG_FILE = "logs/scraper.log"
 EMAIL_SENDER = os.getenv("EMAIL_SENDER")
